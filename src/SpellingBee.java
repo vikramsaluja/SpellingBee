@@ -1,7 +1,6 @@
-// Vikram Saluja SpellingBee Code
-
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.Scanner;
 
 /**
@@ -24,7 +23,7 @@ import java.util.Scanner;
  * It utilizes recursion to generate the strings, mergesort to sort them, and
  * binary search to find them in a dictionary.
  *
- * @author Zach Blick, [ADD YOUR NAME HERE]
+ * @author Zach Blick, Vikram Saluja
  *
  * Written on March 5, 2023 for CS2 @ Menlo School
  *
@@ -42,17 +41,85 @@ public class SpellingBee {
         words = new ArrayList<String>();
     }
 
-    // TODO: generate all possible substrings and permutations of the letters.
-    //  Store them all in the ArrayList words. Do this by calling ANOTHER method
-    //  that will find the substrings recursively.
+    // Generate Method
     public void generate() {
-        // YOUR CODE HERE — Call your recursive method!
+        // Call recusive method
+        generateHelper("", letters);
+
     }
 
-    // TODO: Apply mergesort to sort all words. Do this by calling ANOTHER method
-    //  that will find the substrings recursively.
-    public void sort() {
-        // YOUR CODE HERE
+    // Generate helper method
+    public void generateHelper(String word, String remaining){
+        // Base case if no charecters are left, then add the word to the list
+        if(!word.isEmpty() && !words.contains(word)){
+            words.add(word);
+        }
+
+
+        for(int i = 0; i < remaining.length(); i++){
+            // create the new word of remaing charecters for recurisve call
+            String holder = remaining.substring(0, i)
+                    + remaining.substring(i+1);
+            // Create the new word for recursive call
+            String newWord = word + remaining.substring(i,i+1);
+
+            generateHelper(newWord, holder);
+        }
+    }
+
+    // Merge Sort method
+    public void sort(){
+        words = mergeSort(words);
+    }
+
+    // Recursive method to break up elements
+    public ArrayList<String> mergeSort(ArrayList<String> list) {
+        // Base case, if more than one element is arraylist then keep spliting it up
+        if(list.size() <= 1){
+            return list;
+        }
+        int mid = list.size() / 2;
+        // Create 2 new arrayLists, one for each half
+        ArrayList<String> arrLeft = new ArrayList<>();
+        ArrayList<String> arrRight = new ArrayList<>();
+        // Break up list into halves and add elements to each
+        for(int i = 0; i < mid; i++){
+            arrLeft.add(list.get(i));
+        }
+        for(int j = mid; j < list.size(); j++) {
+            arrRight.add(list.get(j));
+        }
+        // Call recurisve method
+        return merge(mergeSort(arrLeft), mergeSort(arrRight));
+    }
+
+
+    // Take both of the Arraylists and put them back together
+    public ArrayList<String> merge(ArrayList<String> arr1, ArrayList<String> arr2) {
+        ArrayList<String> merged = new ArrayList<>();
+        int index1 = 0;
+        int index2 = 0;
+        int count = 0;
+
+        // While there are stil elements left, check which value is larger in order to add it back to the ArrayList
+        while(index1 < arr1.size() && index2 < arr2.size()){
+            if(arr1.get(index1).compareTo(arr2.get(index2)) < 0){
+                merged.add(count, arr1.get(index1++));
+            }
+            else{
+                merged.add(count, arr2.get(index2++));
+            }
+            count++;
+        }
+
+        while(index1 < arr1.size()){
+            merged.add(count++,arr1.get(index1++));
+        }
+        while(index2 < arr2.size()){
+            merged.add(count++, arr2.get(index2++));
+        }
+        // Return mergerd arraylist
+        return merged;
     }
 
     // Removes duplicates from the sorted list.
@@ -67,11 +134,47 @@ public class SpellingBee {
         }
     }
 
-    // TODO: For each word in words, use binary search to see if it is in the dictionary.
-    //  If it is not in the dictionary, remove it from words.
+
     public void checkWords() {
-        // YOUR CODE HERE
+        // Check every word in arraylist
+        for(int i = 0; i < words.size(); i++){
+            // If it is not found in the binary search, remove it from words.
+            if(!binarySearch(words.get(i))){
+                words.remove(i);
+                i--;
+            }
+        }
+
     }
+
+    // Binary Search Method
+    public boolean binarySearch(String target){
+        int start = 0;
+        int end = DICTIONARY_SIZE - 1;
+
+        while(start <= end){
+            int mid = ((start + end) / 2);
+
+            int comp = DICTIONARY[mid].compareTo(target);
+            // Check if the target is found
+            if(comp == 0){
+                // return true if the target is found
+                return true;
+            }
+            // Check to see if you need to search second half
+            else if(comp < 0){
+                // Search the second half the array
+                start = mid + 1;
+            }
+            else {
+                // if the target isn't found, only search first half of the array
+                end = mid - 1;
+            }
+        }
+        // If the target word is not found, return false
+        return false;
+    }
+
 
     // Prints all valid words to wordList.txt
     public void printWords() throws IOException {
